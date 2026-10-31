@@ -17,6 +17,10 @@ import time
 
 import streamlit as st
 
+from groq import Groq
+
+import streamlit.components.v1 as components
+
 from dotenv import load_dotenv
 
 from streamlit_local_storage import LocalStorage
@@ -71,6 +75,9 @@ client = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY")
 )
 
+groq_client = Groq(
+    api_key=os.getenv("GROQ_API_KEY")
+)
 
 # ==========================================================
 # LANGUAGE SELECTION
@@ -603,41 +610,55 @@ st.html("""
 # HELPER FUNCTIONS
 # ==========================================================
 
+
 def generate_ai_response(contents):
-    """
-    Sends a prompt to Google Gemini and returns the response.
-    """
 
     try:
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=contents
-        )
+        # IMAGE INPUT: Use Gemini
+        if isinstance(contents, list):
 
-        return response.text
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=contents
+            )
 
-    except Exception:
+            return response.text
 
-        st.error(
-            """
-⚠️ Unable to connect to Google Gemini.
+        # TEXT INPUT: Use Groq
+        else:
 
-Possible reasons:
+            response = groq_client.chat.completions.create(
+                model="openai/gpt-oss-20b",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": contents
+                    }
+                ],
+                temperature=0.3,
+                max_completion_tokens=1024
+            )
 
-• Internet connection is unavailable.
-• Gemini servers are temporarily busy.
-• Invalid API Key.
+            return response.choices[0].message.content
 
-Please try again later.
-"""
-        )
+    except Exception as e:
+
+        provider = "Gemini" if isinstance(contents, list) else "Groq"
+
+        print(f"{provider} API Error: {type(e).__name__}: {e}")
+
+        if provider == "Gemini":
+            st.warning(
+                "Image analysis is temporarily unavailable. Please try again later."
+            )
+        else:
+            st.error(
+                "Sorry, the AI couldn't generate a response. Please try again."
+            )
 
         return None
-
-
-
-
+    
 def scroll_to_latest_chat():
     st.components.v1.html(
         """
@@ -927,15 +948,162 @@ If the situation is life-threatening, prioritise emergency services.
 # HOME PAGE
 # ==========================================================
 
+
 if option == t["home"]:
 
-    st.markdown(
-        """
-## 👋 Welcome to AI First Aid Assistant
+        # ======================================================
+    # LOAD PERSONAL CONTACTS FOR SOS
+    # ======================================================
 
-Your AI-powered multilingual companion for basic first-aid guidance.
-"""
+    SOS_CONTACTS_KEY = "ai_first_aid_personal_contacts"
+
+    sos_stored_data = local_storage.getItem(SOS_CONTACTS_KEY)
+
+    try:
+        if isinstance(sos_stored_data, str):
+            sos_contacts = json.loads(sos_stored_data)
+        elif isinstance(sos_stored_data, list):
+            sos_contacts = sos_stored_data
+        else:
+            sos_contacts = []
+
+        if not isinstance(sos_contacts, list):
+            sos_contacts = []
+
+    except (json.JSONDecodeError, TypeError):
+        sos_contacts = []
+
+    sos_contacts = [
+        contact for contact in sos_contacts
+        if isinstance(contact, dict)
+        and contact.get("name")
+        and contact.get("phone")
+    ]
+
+    # ======================================================
+    # SOS DISTRESS SIGNAL
+    # ======================================================
+
+    components.html(
+        """
+        <div id="sos-container">
+            <style>
+                #sos-container {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    padding: 8px 0 18px;
+                    font-family: Arial, sans-serif;
+                }
+
+                #sos-button {
+                    width: 110px;
+                    height: 110px;
+                    border-radius: 50%;
+                    border: 5px solid #FECACA;
+                    background: #DC2626;
+                    color: white;
+                    font-size: 27px;
+                    font-weight: 800;
+                    cursor: pointer;
+                    box-shadow: 0 5px 16px rgba(220,38,38,.30);
+                    touch-action: none;
+                    user-select: none;
+                }
+
+                #sos-button:active {
+                    background: #991B1B;
+                    transform: scale(.96);
+                }
+
+                #sos-status {
+                    margin-top: 10px;
+                    font-size: 13px;
+                    color: #64748B;
+                    text-align: center;
+                }
+
+                #sos-cancel {
+                    display: none;
+                    margin-top: 12px;
+                    padding: 9px 22px;
+                    border: 1px solid #DC2626;
+                    border-radius: 9px;
+                    background: white;
+                    color: #DC2626;
+                    font-weight: bold;
+                    cursor: pointer;
+                }
+            </style>
+
+            <button id="sos-button" type="button">
+                SOS
+            </button>
+
+            <div id="sos-status">
+                Press and hold for 3 seconds
+            </div>
+
+            <button id="sos-cancel" type="button">
+                Cancel SOS
+            </button>
+                        <button id="sos-share" type="button" style="
+                display:none;
+                margin-top:12px;
+                padding:12px 22px;
+                border:none;
+                border-radius:9px;
+                background:#16A34A;
+                color:white;
+                font-weight:bold;
+                cursor:pointer;
+            ">
+                Share SOS Alert on WhatsApp
+            </button>
+        </div>
+
+      
+        """,
+        height=190,
+        scrolling=False
     )
+
+        # SAFE EMERGENCY CALL CONFIRMATION
+
+    if "confirm_112_call" not in st.session_state:
+        st.session_state.confirm_112_call = False
+
+    if st.button("📞 Call 112", key="call_112_button"):
+        st.session_state.confirm_112_call = True
+
+    if st.session_state.confirm_112_call:
+
+        st.warning(
+            "You are about to open your phone dialer "
+            "to call India's emergency number 112."
+        )
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.link_button(
+                "Confirm & Open Dialer",
+                "tel:112",
+                use_container_width=True
+            )
+
+        with col2:
+            if st.button("Cancel", use_container_width=True):
+                st.session_state.confirm_112_call = False
+                st.rerun()
+
+    # HOME PAGE CONTENT
+
+    st.markdown("""
+    ## 👋 Welcome to AI First Aid Assistant
+
+    Your AI-powered multilingual companion for basic first-aid guidance.
+    """)
 
     st.warning(
         "⚠️ This application is for educational purposes only. "
@@ -943,7 +1111,6 @@ Your AI-powered multilingual companion for basic first-aid guidance.
     )
 
     st.divider()
-
     # ======================================================
     # DASHBOARD
     # ======================================================
@@ -1229,9 +1396,20 @@ elif option == t["chat"]:
     '<div id="ai-chat-anchor"></div>',
     unsafe_allow_html=True
     )
+    st.html("""
+    <style>
+    div.st-key-chat_window {
+        background-color: #EFF6FF;
+        border: 1px solid #BFDBFE;
+        border-radius: 14px;
+        padding: 12px;
+    }
+    </style>
+    """)
     chat_box = st.container(
-        height=300,
-        border=True
+    height=300,
+    border=False,
+    key="chat_window"
     )
 
     with chat_box:
