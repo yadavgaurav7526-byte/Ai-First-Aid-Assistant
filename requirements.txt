@@ -1,0 +1,9 @@
+```txt
+streamlit
+google-genai
+python-dotenv
+Pillow
+reportlab
+streamlit-geolocation
+requests
+```
