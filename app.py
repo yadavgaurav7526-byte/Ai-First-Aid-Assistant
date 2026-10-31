@@ -11,9 +11,15 @@
 
 import os
 
+import json
+
+import time
+
 import streamlit as st
 
 from dotenv import load_dotenv
+
+from streamlit_local_storage import LocalStorage
 
 from google import genai
 
@@ -33,6 +39,14 @@ from streamlit_geolocation import streamlit_geolocation
 import requests
 
 from translations import translations
+
+# ==========================================================
+# BROWSER LOCAL STORAGE
+# ==========================================================
+
+local_storage = LocalStorage()
+
+MAX_PERSONAL_CONTACTS = 15
 
 
 # ==========================================================
@@ -444,72 +458,141 @@ img {
 
 
 
+
+
+
 # ==========================================================
 # HEADER
 # ==========================================================
 
-st.markdown(
-    f"""
+if option == t["home"]:
+
+    # LARGE HEADER - HOME PAGE
+    st.html(
+        f"""
+        <div style="
+            background:linear-gradient(135deg,{color1},{color2});
+            padding:35px;
+            border-radius:22px;
+            color:white;
+            text-align:center;
+            margin-bottom:25px;
+            box-shadow:0 10px 25px rgba(0,0,0,.15);
+        ">
+
+            <h1 style="margin-bottom:10px;font-size:42px;color:white;">
+                🩹 AI First Aid Assistant
+            </h1>
+
+            <p style="font-size:18px;margin-bottom:20px;color:white;">
+                Instant AI-powered First Aid Guidance using Google Gemini
+            </p>
+
+            <hr style="
+                border:1px solid rgba(255,255,255,.25);
+                width:80%;
+                margin:auto;
+                margin-bottom:20px;
+            ">
+
+            <div style="
+                display:flex;
+                justify-content:center;
+                gap:30px;
+                flex-wrap:wrap;
+                font-size:15px;
+                font-weight:600;
+            ">
+                <span>🌐 6 Languages</span>
+                <span>📷 Image Analysis</span>
+                <span>📄 PDF Reports</span>
+                <span>🤖 Gemini AI</span>
+                <span>🚑 Emergency Guides</span>
+            </div>
+
+        </div>
+        """
+    )
+
+else:
+
+    # COMPACT HEADER - ALL OTHER PAGES
+    st.html(
+        f"""
+        <div style="
+            background:linear-gradient(135deg,{color1},{color2});
+            padding:12px 20px;
+            border-radius:14px;
+            color:white;
+            text-align:center;
+            margin-bottom:15px;
+            box-shadow:0 4px 12px rgba(0,0,0,.10);
+        ">
+
+            <h2 style="
+                margin:0;
+                padding:0;
+                font-size:24px;
+                color:white;
+            ">
+                🩹 AI First Aid Assistant
+            </h2>
+
+        </div>
+        """
+    )
+
+# ==========================================================
+# DEVELOPER BRANDING
+# ==========================================================
+
+st.html("""
 <div style="
-background:linear-gradient(135deg,{color1},{color2});
-padding:35px;
-border-radius:22px;
-color:white;
-text-align:center;
-margin-bottom:25px;
-box-shadow:0 10px 25px rgba(0,0,0,.15);
+    display:flex;
+    justify-content:flex-end;
+    margin:0 5px 15px 0;
 ">
+    <div style="
+        text-align:right;
+        padding:8px 14px;
+        border-radius:12px;
+        background:#F1F5F9;
+        border:1px solid #E2E8F0;
+    ">
+        <div style="
+            font-size:14px;
+            font-weight:700;
+            color:#1E293B;
+        ">
+            🩹 AI First Aid Assistant
+            <span style="
+                font-size:10px;
+                color:#64748B;
+                font-weight:500;
+            ">v3.0</span>
+        </div>
 
-<h1 style="
-margin-bottom:10px;
-font-size:42px;
-">
+        <div style="
+            font-size:11px;
+            color:#64748B;
+            margin-top:3px;
+        ">
+            Developed by Gaurav Yadav
+        </div>
 
-🩹 AI First Aid Assistant
-
-</h1>
-
-<p style="
-font-size:18px;
-margin-bottom:20px;
-">
-
-Instant AI-powered First Aid Guidance using Google Gemini
-
-</p>
-
-<hr style="
-border:1px solid rgba(255,255,255,.25);
-width:80%;
-margin:auto;
-margin-bottom:20px;
-">
-
-<div style="
-display:flex;
-justify-content:center;
-gap:30px;
-flex-wrap:wrap;
-font-size:15px;
-font-weight:600;
-">
-
-<span>🌐 6 Languages</span>
-
-<span>📷 Image Analysis</span>
-
-<span>📄 PDF Reports</span>
-
-<span>🤖 Gemini AI</span>
-
-<span>🚑 Emergency Guides</span>
-
+        <div style="
+            font-size:10px;
+            color:#94A3B8;
+        ">
+            B.Sc. Computer Science
+        </div>
+    </div>
 </div>
+""")
 
-</div>
-""",
-    unsafe_allow_html=True
-)
+
+
+
 # ==========================================================
 # HELPER FUNCTIONS
 # ==========================================================
@@ -545,6 +628,68 @@ Please try again later.
         )
 
         return None
+
+
+
+
+def scroll_to_latest_chat():
+    st.components.v1.html(
+        """
+        <script>
+        function updateChatPosition() {
+            const doc = window.parent.document;
+            const win = window.parent;
+
+            // 1. Bring the AI Chat section to the top
+            const anchor = doc.getElementById("ai-chat-anchor");
+
+            if (anchor) {
+                const top =
+                    anchor.getBoundingClientRect().top + win.scrollY;
+
+                win.scrollTo({
+                    top: top,
+                    behavior: "smooth"
+                });
+            }
+
+            // 2. Scroll the conversation to its latest message
+            const messages = doc.querySelectorAll(
+                '[data-testid="stChatMessage"]'
+            );
+
+            if (messages.length > 0) {
+                const latestMessage = messages[messages.length - 1];
+
+                let parent = latestMessage.parentElement;
+
+                while (parent && parent !== doc.body) {
+                    const style = win.getComputedStyle(parent);
+
+                    if (
+                        (style.overflowY === "auto" ||
+                         style.overflowY === "scroll") &&
+                        parent.scrollHeight > parent.clientHeight
+                    ) {
+                        parent.scrollTo({
+                            top: parent.scrollHeight,
+                            behavior: "smooth"
+                        });
+                        break;
+                    }
+
+                    parent = parent.parentElement;
+                }
+            }
+        }
+
+        setTimeout(updateChatPosition, 300);
+        setTimeout(updateChatPosition, 800);
+        setTimeout(updateChatPosition, 1300);
+        </script>
+        """,
+        height=0,
+    )
 
 
 # ==========================================================
@@ -634,6 +779,7 @@ def create_pdf(title, content):
     return pdf_file
 
 
+
 # ==========================================================
 # QUICK FIRST AID
 # ==========================================================
@@ -655,25 +801,42 @@ def show_first_aid(topic):
         prompt = f"""
 You are an expert AI First Aid Assistant designed for users in India.
 
+CRITICAL INSTRUCTION:
+The user has specifically selected this emergency category:
+
+"{topic}"
+
+You MUST provide first-aid guidance ONLY for this exact category.
+
+Do not replace it with minor cuts, general injuries, or any other
+medical condition.
+
+CATEGORY-SPECIFIC RULES:
+- Burns: Explain burn first aid, cooling the burn under cool
+  running water for 20 minutes, and appropriate protection.
+- Bleeding: Explain direct pressure, wound protection and
+  emergency help for severe bleeding.
+- Fractures: Explain immobilisation, avoiding movement and
+  emergency assistance.
+- Choking: Explain appropriate choking first aid based on
+  whether the person is an adult, child or infant.
+- Snake Bite: Explain keeping the person still, immobilising
+  the affected limb, urgent hospital care and what NOT to do.
+- Cardiopulmonary Resuscitation (CPR): Explain checking
+  responsiveness and normal breathing, calling emergency
+  services, and starting CPR/AED steps where appropriate.
+
 IMPORTANT LOCATION RULES:
-- Assume the user is in India unless the user explicitly states another country.
-- Never recommend emergency numbers from the USA or another country unless the user explicitly says they are in that country.
-- For users in India, use Indian emergency services.
+- Assume the user is in India unless explicitly told otherwise.
 - India's main emergency number is 112.
 - Ambulance: 108.
-- Fire Brigade: 101.
-- Women Helpline: 181.
-- Child Helpline: 1098.
-- Disaster Management: 1078.
-- Never recommend 911 unless the user explicitly states they are in the USA.
+- Never recommend 911 unless the user explicitly states
+  they are in the USA.
 - Never invent emergency numbers.
 
 Reply ONLY in {t["reply_language"]}.
 
-Provide first aid for:
-
-
-Format exactly like this:
+Use this exact structure:
 
 🩺 Injury
 
@@ -694,7 +857,9 @@ Format exactly like this:
 
 Keep the answer under 180 words.
 
-Never diagnose diseases.
+Use medically appropriate, evidence-based first-aid guidance.
+Do not diagnose diseases.
+If the situation is life-threatening, prioritise emergency services.
 """
 
         with st.spinner("Generating First Aid..."):
@@ -705,32 +870,30 @@ Never diagnose diseases.
 
             st.markdown(
                 f"""
-<div style="
-background:#F8FAFF;
-padding:22px;
-border-radius:16px;
-border-left:6px solid #2563EB;
-box-shadow:0 6px 18px rgba(0,0,0,.10);
-margin-bottom:20px;
-">
+                <div style="
+                    background:#F8FAFF;
+                    padding:22px;
+                    border-radius:16px;
+                    border-left:6px solid #2563EB;
+                    box-shadow:0 6px 18px rgba(0,0,0,.10);
+                    margin-bottom:20px;
+                ">
 
-<h3 style="color:#2563EB;">
-🩺 AI First Aid Guidance
-</h3>
+                <h3 style="color:#2563EB;">
+                    🩺 AI First Aid Guidance
+                </h3>
 
-<div style="
-font-size:16px;
-line-height:1.8;
-white-space:pre-wrap;
-color:#333333;
-">
+                <div style="
+                    font-size:16px;
+                    line-height:1.8;
+                    white-space:pre-wrap;
+                    color:#333333;
+                ">
+                {answer.replace(chr(10), "<br>")}
+                </div>
 
-{answer.replace(chr(10), "<br>")}
-
-</div>
-
-</div>
-""",
+                </div>
+                """,
                 unsafe_allow_html=True
             )
 
@@ -752,6 +915,7 @@ color:#333333;
                     mime="application/pdf",
                     use_container_width=True
                 )
+
 
 # ==========================================================
 # HOME PAGE
@@ -921,14 +1085,39 @@ Your AI-powered multilingual companion for basic first-aid guidance.
 # AI ASSISTANT
 # ==========================================================
 
+
 elif option == t["chat"]:
 
-    st.title("💬 AI First Aid Assistant")
+    st.html("""
+    <div style="
+        border:1px solid #CBD5E1;
+        border-radius:12px;
+        padding:9px 13px;
+        margin-bottom:10px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:10px;
+    ">
+        <div>
+            <div style="font-size:16px;font-weight:700;color:#1E293B;">
+                💬 AI First Aid Assistant
+            </div>
+            <div style="font-size:11px;color:#64748B;">
+                Ask questions or upload an injury image.
+            </div>
+        </div>
 
-    st.caption(
-        "Describe your injury, ask a follow-up question, "
-        "or upload an injury image."
-    )
+        <div style="
+            font-size:12px;
+            font-weight:600;
+            color:#2563EB;
+            white-space:nowrap;
+        ">
+            💬 Conversation
+        </div>
+    </div>
+    """)
 
     # ======================================================
     # CHAT SESSION SETUP
@@ -974,6 +1163,7 @@ elif option == t["chat"]:
                 "A new conversation has been started."
             )
 
+    
     # ======================================================
     # CHAT HEADER
     # ======================================================
@@ -981,20 +1171,18 @@ elif option == t["chat"]:
     col1, col2 = st.columns([4, 1])
 
     with col1:
-
-        st.markdown("### 💬 Conversation")
+        st.caption("Your conversation")
 
     with col2:
-
         clear_chat = st.button(
-            "🗑 Clear Chat",
+            "🗑 Clear",
             use_container_width=True,
             disabled=not st.session_state.chat_messages
         )
 
     if clear_chat:
-
         st.session_state.confirm_clear_chat = True
+
 
     # ======================================================
     # CLEAR CHAT CONFIRMATION
@@ -1039,9 +1227,12 @@ elif option == t["chat"]:
     # ======================================================
     # SCROLLABLE CHAT WINDOW
     # ======================================================
-
+    st.markdown(
+    '<div id="ai-chat-anchor"></div>',
+    unsafe_allow_html=True
+    )
     chat_box = st.container(
-        height=500,
+        height=300,
         border=True
     )
 
@@ -1051,11 +1242,7 @@ elif option == t["chat"]:
 
             st.markdown(
                 """
-                ### 👋 Hello!
-
-                Describe an injury or ask me a first-aid question.
-
-                You can also upload an injury image for analysis.
+                Hello! How can I help you today?    
                 """
             )
 
@@ -1082,7 +1269,7 @@ elif option == t["chat"]:
                     with st.chat_message("assistant"):
 
                         st.markdown(message["content"])
-
+    scroll_to_latest_chat()
 
     submission = st.chat_input(
         "Describe your injury or attach an image...",
@@ -1110,6 +1297,7 @@ elif option == t["chat"]:
             )
 
             st.stop()
+
 
         # ======================================================
         # PROCESS MESSAGE
@@ -1385,25 +1573,190 @@ elif option == t["help"]:
 
     ]
 
-    for name, number in emergency_numbers:
+    
+    # ==========================================================
+    # EMERGENCY CONTACTS - TWO COLUMN LAYOUT
+    # ==========================================================
 
-        with st.container(border=True):
+    general_col, personal_col = st.columns([1, 1], gap="medium")
 
-            col1, col2 = st.columns([3, 1])
+    # ----------------------------------------------------------
+    # LEFT: GENERAL EMERGENCY CONTACTS
+    # ----------------------------------------------------------
 
-            with col1:
+    with general_col:
 
-                st.subheader(name)
+        st.subheader("🚨 General Emergency")
 
+        for name, number in emergency_numbers:
+
+            with st.container(border=True):
+
+                st.markdown(f"**{name}**")
                 st.caption(f"Emergency Number: {number}")
-
-            with col2:
 
                 st.link_button(
                     "📞 Call",
                     f"tel:{number}",
                     use_container_width=True
                 )
+
+    # ----------------------------------------------------------
+    # RIGHT: PERSONAL EMERGENCY CONTACTS
+    # ----------------------------------------------------------
+
+    with personal_col:
+
+        CONTACTS_KEY = "ai_first_aid_personal_contacts"
+
+        header_col, button_col = st.columns([3, 1])
+
+        with header_col:
+            st.subheader("👥 Personal Contacts")
+
+        with button_col:
+            add_clicked = st.button(
+                "＋ Add",
+                key="open_add_contact",
+                use_container_width=True
+            )
+
+        # Load browser contacts
+        stored_data = local_storage.getItem(CONTACTS_KEY)
+
+        if stored_data:
+            try:
+                contacts = (
+                    json.loads(stored_data)
+                    if isinstance(stored_data, str)
+                    else stored_data
+                )
+
+                if not isinstance(contacts, list):
+                    contacts = []
+
+            except (json.JSONDecodeError, TypeError):
+                contacts = []
+                st.error("Unable to read saved contacts.")
+        else:
+            contacts = []
+
+        st.session_state.personal_contacts = contacts
+
+        st.caption(
+            f"{len(contacts)} / {MAX_PERSONAL_CONTACTS} saved"
+        )
+
+        if add_clicked:
+            st.session_state.show_add_contact_form = True
+
+        if "show_add_contact_form" not in st.session_state:
+            st.session_state.show_add_contact_form = False
+
+        # ADD CONTACT FORM
+        if st.session_state.show_add_contact_form:
+
+            with st.form("add_personal_contact"):
+
+                contact_name = st.text_input(
+                    "Name",
+                    max_chars=60,
+                    placeholder="Contact name"
+                )
+
+                contact_phone = st.text_input(
+                    "Phone Number",
+                    max_chars=15,
+                    placeholder="Phone number"
+                )
+
+                save_col, cancel_col = st.columns(2)
+
+                with save_col:
+                    submitted = st.form_submit_button(
+                        "Save",
+                        use_container_width=True
+                    )
+
+                with cancel_col:
+                    cancelled = st.form_submit_button(
+                        "Cancel",
+                        use_container_width=True
+                    )
+
+                if cancelled:
+                    st.session_state.show_add_contact_form = False
+                    st.rerun()
+
+                if submitted:
+
+                    clean_name = contact_name.strip()
+                    clean_phone = contact_phone.strip()
+
+                    if not clean_name:
+                        st.error("Enter a contact name.")
+
+                    elif not clean_phone.isdigit() or not (
+                        10 <= len(clean_phone) <= 15
+                    ):
+                        st.error("Enter a valid phone number.")
+
+                    elif len(contacts) >= MAX_PERSONAL_CONTACTS:
+                        st.error("Maximum 15 contacts allowed.")
+
+                    elif any(
+                        c.get("phone") == clean_phone
+                        for c in contacts
+                    ):
+                        st.error("This number already exists.")
+
+                    else:
+                        contacts.append({
+                            "name": clean_name,
+                            "phone": clean_phone
+                        })
+
+                        local_storage.setItem(
+                            CONTACTS_KEY,
+                            json.dumps(contacts, ensure_ascii=False)
+                        )
+
+                        st.session_state.show_add_contact_form = False
+
+                        time.sleep(1.5)
+                        st.success("Contact saved!")
+                        st.rerun()
+
+        # DISPLAY CONTACTS
+        if contacts:
+
+            for index, contact in enumerate(contacts):
+
+                with st.container(border=True):
+
+                    st.markdown(f"**👤 {contact['name']}**")
+                    st.caption(f"📞 {contact['phone']}")
+
+                    if st.button(
+                        "🗑 Delete",
+                        key=f"delete_contact_{index}",
+                        use_container_width=True
+                    ):
+
+                        contacts.pop(index)
+
+                        local_storage.setItem(
+                            CONTACTS_KEY,
+                            json.dumps(contacts, ensure_ascii=False)
+                        )
+
+                        time.sleep(1.5)
+                        st.rerun()
+
+        else:
+            st.info("No personal contacts saved yet.")
+
+
 
     # ==========================================================
     # GET LOCATION
@@ -1541,55 +1894,64 @@ else:
 # FOOTER
 # ==========================================================
 
-st.divider()
-
-col1, col2 = st.columns([3, 2])
-
-with col1:
-
-    st.markdown("### 🩹 AI First Aid Assistant")
-
-    st.caption("Version 3.0")
-
-    st.caption("🤖 Powered by Google Gemini 2.5 Flash")
-
-
-with col2:
-
-    st.markdown("### 👨‍💻 Developer")
-
-    st.caption("Gaurav Yadav")
-
-    st.caption("B.Sc. Computer Science")
-
-
-st.divider()
-
-st.markdown(
-    """
+st.html("""
 <div style="
-text-align:center;
-color:#6B7280;
-font-size:14px;
-line-height:1.7;
+    margin-top:12px;
+    padding:10px 12px;
+    background:#F8FAFC;
+    border:1px solid #E2E8F0;
+    border-radius:10px;
 ">
 
-⚠️ <b>Disclaimer</b><br><br>
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        flex-wrap:wrap;
+        gap:5px;
+        font-size:11px;
+        color:#64748B;
+    ">
+        <span>
+            🩹 <b>AI First Aid Assistant</b> · v3.0
+        </span>
 
-This application provides AI-generated first aid guidance
-for educational purposes only.
+        <span>
+            👨‍💻 Gaurav Yadav · SYCS
+        </span>
+    </div>
 
-It should not replace professional medical advice,
-diagnosis or treatment.
+    <div style="
+        text-align:center;
+        font-size:10px;
+        color:#64748B;
+        margin-top:5px;
+    ">
+        🤖 Powered by Google Gemini 2.5 Flash
+    </div>
 
-In life-threatening situations,
-immediately contact your local emergency medical services.
+    <div style="
+        margin-top:8px;
+        padding-top:7px;
+        border-top:1px solid #E2E8F0;
+        font-size:10px;
+        color:#64748B;
+        line-height:1.5;
+        text-align:center;
+    ">
+        ⚠️ For educational purposes only. Not a substitute for professional
+        medical advice, diagnosis or treatment. Contact emergency services
+        immediately in life-threatening situations.
+    </div>
 
-<br><br>
-
-© 2026 AI First Aid Assistant
+    <div style="
+        text-align:center;
+        font-size:9px;
+        color:#94A3B8;
+        margin-top:5px;
+    ">
+        © 2026 AI First Aid Assistant
+    </div>
 
 </div>
-""",
-    unsafe_allow_html=True
-)
+""")

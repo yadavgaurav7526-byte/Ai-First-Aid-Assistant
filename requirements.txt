@@ -5,3 +5,4 @@ Pillow
 reportlab
 streamlit-geolocation
 requests
+streamlit-local-storage
