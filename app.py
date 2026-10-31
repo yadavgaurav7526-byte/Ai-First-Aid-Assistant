@@ -510,8 +510,14 @@ if option == t["home"]:
                 <span>🚑 Emergency Guides</span>
             </div>
 
-        </div>
+                </div>
         """
+    )
+
+    # FIND NEARBY HOSPITAL BUTTON
+    st.link_button(
+        "🏥 Find Nearby Hospitals",
+        "https://www.google.com/maps/search/hospitals+near+me"
     )
 
 else:
@@ -1071,15 +1077,7 @@ Your AI-powered multilingual companion for basic first-aid guidance.
 
     st.divider()
 
-    # ======================================================
-    # HOSPITAL SEARCH
-    # ======================================================
-
-    st.link_button(
-        "🏥 Find Nearby Hospitals",
-        "https://www.google.com/maps/search/hospitals+near+me",
-        use_container_width=True
-    )
+    
 
 # ==========================================================
 # AI ASSISTANT
