@@ -1,4 +1,3 @@
-<CodeBlock language="text" editable>
 streamlit
 google-genai
 python-dotenv
@@ -8,4 +7,3 @@ streamlit-geolocation
 requests
 streamlit-local-storage
 groq
-</CodeBlock>
