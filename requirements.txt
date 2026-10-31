@@ -1,3 +1,4 @@
+<CodeBlock language="text" editable>
 streamlit
 google-genai
 python-dotenv
@@ -6,3 +7,5 @@ reportlab
 streamlit-geolocation
 requests
 streamlit-local-storage
+groq
+</CodeBlock>
