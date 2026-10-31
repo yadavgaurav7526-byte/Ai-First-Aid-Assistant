@@ -130,6 +130,7 @@ color1, color2 = page_colors.get(
     option,
     ("#2563EB", "#38BDF8")
 )
+
 # ==========================================================
 # CSS
 # ==========================================================
@@ -139,166 +140,125 @@ st.markdown(
 <style>
 
 /* ==========================================================
+   GLOBAL THEME AND TEXT VISIBILITY
+========================================================== */
+
+.stApp {
+    background: #F8FAFC !important;
+    color: #1E293B !important;
+}
+
+/* Main page text */
+.stApp [data-testid="stMarkdownContainer"],
+.stApp [data-testid="stMarkdownContainer"] p,
+.stApp [data-testid="stMarkdownContainer"] li,
+.stApp [data-testid="stMarkdownContainer"] h1,
+.stApp [data-testid="stMarkdownContainer"] h2,
+.stApp [data-testid="stMarkdownContainer"] h3,
+.stApp [data-testid="stMarkdownContainer"] h4 {
+    color: #1E293B;
+}
+
+/* Labels and captions */
+.stApp label,
+.stApp [data-testid="stCaptionContainer"],
+.stApp .stText,
+.stApp small {
+    color: #334155;
+}
+
+/* ==========================================================
    HIDE STREAMLIT
 ========================================================== */
 
-#MainMenu{
-    visibility:hidden;
+#MainMenu {
+    visibility: hidden;
 }
 
-footer{
-    visibility:hidden;
+footer {
+    visibility: hidden;
 }
-
 
 /* ==========================================================
-   APP
+   SIDEBAR
 ========================================================== */
 
-.stApp{
-    background:#F8FAFC;
+section[data-testid="stSidebar"] {
+    background: #F1F5F9 !important;
+}
+
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] * {
+    color: #1E293B;
 }
 
 /* ==========================================================
    BUTTONS
 ========================================================== */
 
-.stButton > button{
-
-    width:100%;
-
-    border:none;
-
-    border-radius:14px;
-
-    padding:12px;
-
-    background:#2563EB;
-
-    color:white;
-
-    font-size:16px;
-
-    font-weight:600;
-
-    transition:0.25s;
+.stButton > button {
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    padding: 12px;
+    background: #2563EB !important;
+    color: #FFFFFF !important;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.25s ease;
 }
 
-.stButton > button:hover{
-
-    background:#1D4ED8;
-
-    transform:translateY(-2px);
-
-    box-shadow:0 8px 20px rgba(37,99,235,.25);
-
+.stButton > button:hover {
+    background: #1D4ED8 !important;
+    color: #FFFFFF !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37,99,235,.25);
 }
 
 /* ==========================================================
-   TEXT AREA
+   INPUTS AND TEXT AREA
 ========================================================== */
 
-textarea{
+input,
+textarea {
+    color: #1E293B !important;
+    background: #FFFFFF !important;
+    border-radius: 12px !important;
+}
 
-    border-radius:14px !important;
+input::placeholder,
+textarea::placeholder {
+    color: #64748B !important;
+    opacity: 1;
+}
 
+[data-testid="stTextInput"] label,
+[data-testid="stTextArea"] label {
+    color: #1E293B !important;
 }
 
 /* ==========================================================
-   FILE UPLOADER
+   SELECT BOXES
 ========================================================== */
 
-[data-testid="stFileUploader"]{
+[data-testid="stSelectbox"] label {
+    color: #1E293B !important;
+}
 
-    border-radius:14px;
-
-    border:2px dashed #CBD5E1;
-
-    padding:15px;
-
-    background:white;
-
+[data-testid="stSelectbox"] div[data-baseweb="select"] {
+    background: #FFFFFF !important;
+    color: #1E293B !important;
 }
 
 /* ==========================================================
-   METRICS
+   RADIO BUTTONS AND CHECKBOXES
 ========================================================== */
 
-[data-testid="stMetric"]{
-
-    background:white;
-
-    border-radius:16px;
-
-    padding:14px;
-
-    border:1px solid #E5E7EB;
-
-    box-shadow:0 4px 12px rgba(0,0,0,.08);
-
-}
-
-/* ==========================================================
-   DOWNLOAD BUTTON
-========================================================== */
-
-[data-testid="stDownloadButton"] button{
-
-    border-radius:14px;
-
-}
-
-/* ==========================================================
-   ALERTS
-========================================================== */
-
-[data-testid="stSuccess"],
-[data-testid="stWarning"],
-[data-testid="stError"],
-[data-testid="stInfo"]{
-
-    border-radius:14px;
-
-}
-
-/* ==========================================================
-   IMAGES
-========================================================== */
-
-img{
-
-    border-radius:14px;
-
-}
-
-/* ==========================================================
-   ANIMATION
-========================================================== */
-
-.block-container{
-
-    animation:fade .35s ease;
-
-}
-
-@keyframes fade{
-
-from{
-
-opacity:0;
-
-transform:translateY(8px);
-
-}
-
-to{
-
-opacity:1;
-
-transform:translateY(0);
-
-}
-
+[data-testid="stRadio"] label,
+[data-testid="stCheckbox"] label {
+    color: #1E293B !important;
 }
 
 /* ==========================================================
@@ -310,7 +270,8 @@ div[data-testid="stRadio"] [role="radiogroup"] {
 }
 
 div[data-testid="stRadio"] label {
-    background: white !important;
+    background: #FFFFFF !important;
+    color: #1E293B !important;
     border: 1px solid #E5E7EB !important;
     border-radius: 12px !important;
     padding: 8px 14px !important;
@@ -318,6 +279,11 @@ div[data-testid="stRadio"] label {
     cursor: pointer !important;
     transition: all 0.25s ease !important;
     font-size: 16px !important;
+}
+
+div[data-testid="stRadio"] label p,
+div[data-testid="stRadio"] label span {
+    color: #1E293B !important;
 }
 
 div[data-testid="stRadio"] label:hover {
@@ -328,7 +294,7 @@ div[data-testid="stRadio"] label:hover {
 
 div[data-testid="stRadio"] label:has(input[type="radio"]:checked) {
     background: #2563EB !important;
-    color: white !important;
+    color: #FFFFFF !important;
     border-color: #2563EB !important;
     font-weight: 600 !important;
     box-shadow: 0 8px 18px rgba(37,99,235,.25);
@@ -336,31 +302,146 @@ div[data-testid="stRadio"] label:has(input[type="radio"]:checked) {
 
 div[data-testid="stRadio"] label:has(input[type="radio"]:checked) p,
 div[data-testid="stRadio"] label:has(input[type="radio"]:checked) span {
-    color: white !important;
+    color: #FFFFFF !important;
 }
 
+/* ==========================================================
+   FILE UPLOADER
+========================================================== */
 
-[data-testid="stLinkButton"] a{
-
-    border-radius:12px !important;
-
-    background:#DC2626 !important;
-
-    color:white !important;
-
-    font-weight:600;
-
+[data-testid="stFileUploader"] {
+    border-radius: 14px;
+    border: 2px dashed #CBD5E1;
+    padding: 15px;
+    background: #FFFFFF !important;
 }
 
-[data-testid="stLinkButton"] a:hover{
-
-    background:#B91C1C !important;
-
+[data-testid="stFileUploader"] * {
+    color: #1E293B;
 }
+
+/* ==========================================================
+   METRICS
+========================================================== */
+
+[data-testid="stMetric"] {
+    background: #FFFFFF !important;
+    border-radius: 16px;
+    padding: 14px;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    color: #1E293B !important;
+}
+
+/* ==========================================================
+   DOWNLOAD BUTTON
+========================================================== */
+
+[data-testid="stDownloadButton"] button {
+    border-radius: 14px;
+    color: #FFFFFF !important;
+}
+
+/* ==========================================================
+   ALERTS
+========================================================== */
+
+[data-testid="stSuccess"],
+[data-testid="stWarning"],
+[data-testid="stError"],
+[data-testid="stInfo"] {
+    border-radius: 14px;
+}
+
+/* ==========================================================
+   LINK BUTTON
+========================================================== */
+
+[data-testid="stLinkButton"] a {
+    border-radius: 12px !important;
+    background: #DC2626 !important;
+    color: #FFFFFF !important;
+    font-weight: 600;
+}
+
+[data-testid="stLinkButton"] a:hover {
+    background: #B91C1C !important;
+    color: #FFFFFF !important;
+}
+
+/* ==========================================================
+   IMAGES
+========================================================== */
+
+img {
+    border-radius: 14px;
+}
+
+/* ==========================================================
+   ANIMATION
+========================================================== */
+
+.block-container {
+    animation: fade .35s ease;
+}
+
+@keyframes fade {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================
+   MOBILE RESPONSIVENESS
+========================================================== */
+
+@media (max-width: 768px) {
+
+    .block-container {
+        padding: 1rem 1rem 3rem 1rem !important;
+    }
+
+    .stApp {
+        color: #1E293B !important;
+    }
+
+    .stButton > button {
+        width: 100%;
+        min-height: 44px;
+        font-size: 15px;
+    }
+
+    h1 {
+        font-size: 1.8rem !important;
+    }
+
+    h2 {
+        font-size: 1.5rem !important;
+    }
+
+    h3 {
+        font-size: 1.25rem !important;
+    }
+
+    p, li, label {
+        font-size: 15px;
+    }
+
+    [data-testid="stMetric"] {
+        padding: 10px;
+    }
+}
+
 </style>
 """,
     unsafe_allow_html=True
 )
+
 
 
 # ==========================================================
