@@ -23,3 +23,6 @@ The application is being prepared for deployment. The Gemini API key is configur
 This project is made for educational purposes and provides basic first-aid information. AI responses and image analysis may not always be accurate. Always seek professional medical help during emergencies.
 
 **Developed by Gaurav Yadav**
+
+##LINK
+https://ai-first-aid-assistant-z9zbtphazq2hraqdrp8itb.streamlit.app/
