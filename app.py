@@ -300,67 +300,45 @@ transform:translateY(0);
 }
 
 }
+
 /* ==========================================================
    SIDEBAR NAVIGATION BUTTONS
 ========================================================== */
 
-div[role="radiogroup"]{
-
-    gap:8px;
-
+div[data-testid="stRadio"] [role="radiogroup"] {
+    gap: 8px;
 }
 
-div[role="radiogroup"] > label{
-
-    background:white;
-
-    border:1px solid #E5E7EB;
-
-    border-radius:12px;
-
-    padding:8px 14px !important;
-
-    margin-bottom:5px;
-
-    cursor:pointer;
-
-    transition:all .25s ease;
-
-    font-size:16px;
-
-    font-weight:600;
-
+div[data-testid="stRadio"] label {
+    background: white !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 12px !important;
+    padding: 8px 14px !important;
+    margin-bottom: 5px !important;
+    cursor: pointer !important;
+    transition: all 0.25s ease !important;
+    font-size: 16px !important;
 }
 
-div[role="radiogroup"] > label:hover{
-
-    background:#EFF6FF;
-
-    border-color:#93C5FD;
-
-    transform:translateX(4px);
-
+div[data-testid="stRadio"] label:hover {
+    background: #EFF6FF !important;
+    border-color: #93C5FD !important;
+    transform: translateX(4px);
 }
 
-div[role="radiogroup"] input[type="radio"]{
-
-    display:none;
-
+div[data-testid="stRadio"] label:has(input[type="radio"]:checked) {
+    background: #2563EB !important;
+    color: white !important;
+    border-color: #2563EB !important;
+    font-weight: 600 !important;
+    box-shadow: 0 8px 18px rgba(37,99,235,.25);
 }
 
-div[role="radiogroup"] > label:has(input:checked){
-
-    background:#2563EB !important;
-
-    color:white !important;
-
-    border-color:#2563EB;
-
-    font-weight:600;
-
-    box-shadow:0 8px 18px rgba(37,99,235,.25);
-
+div[data-testid="stRadio"] label:has(input[type="radio"]:checked) p,
+div[data-testid="stRadio"] label:has(input[type="radio"]:checked) span {
+    color: white !important;
 }
+
 
 [data-testid="stLinkButton"] a{
 
