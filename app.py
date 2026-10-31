@@ -472,7 +472,7 @@ img {
 # HEADER
 # ==========================================================
 
-if option == t["home"]:
+if option == t["home"]:   
 
     # LARGE HEADER - HOME PAGE
     st.html(
@@ -515,12 +515,23 @@ if option == t["home"]:
                 <span>📄 PDF Reports</span>
                 <span>🤖 Gemini AI</span>
                 <span>🚑 Emergency Guides</span>
+                            </div>
+            
+                        <div style="
+                margin-top:22px;
+                padding-top:14px;
+                border-top:1px solid rgba(255,255,255,.25);
+                font-size:13px;
+                line-height:1.6;
+                color:white;
+            ">
+                ⚠️ For educational purposes only. Always contact emergency medical services during serious emergencies.
             </div>
 
-                </div>
+        </div>
         """
     )
-
+    
     # FIND NEARBY HOSPITAL BUTTON
     st.link_button(
         "🏥 Find Nearby Hospitals",
@@ -950,8 +961,10 @@ If the situation is life-threatening, prioritise emergency services.
 
 
 if option == t["home"]:
+    
 
-        # ======================================================
+
+    # ======================================================
     # LOAD PERSONAL CONTACTS FOR SOS
     # ======================================================
 
@@ -988,33 +1001,74 @@ if option == t["home"]:
     components.html(
         """
         <div id="sos-container">
+
             <style>
                 #sos-container {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    padding: 8px 0 18px;
                     font-family: Arial, sans-serif;
+                    padding: 12px 0 18px;
+                    text-align: center;
+                }
+
+                #action-row {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px;
+                align-items: start;
+                justify-items: center;
+                width: 100%;
+                }
+
+                .action-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                width: 100%;
+                min-width: 0;
+                align-self: start;
+                }
+
+                .action-button {
+                width: 100%;
+                max-width: 110px;
+                aspect-ratio: 1 / 1;
+                border-radius: 50%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 5px;
+                color: white;
+                font-weight: bold;
+                cursor: pointer;
+                border: 4px solid rgba(255,255,255,.65);
+                box-shadow: 0 5px 16px rgba(0,0,0,.15);
+                padding: 5px;
+                text-align: center;
+                font-family: Arial, sans-serif;
+                margin: 0;
+                }
+
+                #hospital-button {
+                    background: #2563EB;
+                    font-size: 12px;
                 }
 
                 #sos-button {
-                    width: 110px;
-                    height: 110px;
-                    border-radius: 50%;
-                    border: 5px solid #FECACA;
                     background: #DC2626;
-                    color: white;
-                    font-size: 27px;
-                    font-weight: 800;
-                    cursor: pointer;
-                    box-shadow: 0 5px 16px rgba(220,38,38,.30);
+                    border: 5px solid #FECACA;
+                    font-size: 25px;
                     touch-action: none;
                     user-select: none;
                 }
 
-                #sos-button:active {
-                    background: #991B1B;
-                    transform: scale(.96);
+                #location-button {
+                    background: #16A34A;
+                    font-size: 12px;
+                }
+
+                .action-button:active {
+                    transform: scale(.95);
                 }
 
                 #sos-button:disabled {
@@ -1022,246 +1076,388 @@ if option == t["home"]:
                     cursor: not-allowed;
                 }
 
+                .action-icon {
+                    font-size: 25px;
+                }
+                .action-description {
+                    font-size: 9px;
+                    font-weight: 500;
+                    line-height: 1.2;
+                    max-width: 85px;
+                }
+
                 #sos-status {
-                    margin-top: 10px;
+                    margin-top: 14px;
                     font-size: 13px;
                     color: #64748B;
                     text-align: center;
+                    line-height: 1.5;
                 }
 
-                #sos-cancel {
+                #location-result {
                     display: none;
-                    margin-top: 12px;
-                    padding: 9px 22px;
-                    border: 1px solid #DC2626;
-                    border-radius: 9px;
-                    background: white;
-                    color: #DC2626;
-                    font-weight: bold;
-                    cursor: pointer;
+                    margin-top: 8px;
+                    font-size: 13px;
+                    color: #2563EB;
+                    text-decoration: underline;
                 }
 
+                #sos-cancel,
                 #sos-share {
                     display: none;
                     margin-top: 12px;
-                    padding: 12px 22px;
-                    border: none;
+                    padding: 11px 20px;
                     border-radius: 9px;
-                    background: #16A34A;
-                    color: white;
                     font-weight: bold;
                     cursor: pointer;
                 }
-            </style>
 
-            <button id="sos-button" type="button">
-                SOS
-            </button>
-
-            <div id="sos-status">
-                Press and hold for 3 seconds
-            </div>
-
-            <button id="sos-cancel" type="button">
-                Cancel SOS
-            </button>
-
-            <button id="sos-share" type="button">
-                Share SOS Alert on WhatsApp
-            </button>
-        </div>
-
-        <script>
-            const button = document.getElementById("sos-button");
-            const status = document.getElementById("sos-status");
-            const cancelButton = document.getElementById("sos-cancel");
-            const shareButton = document.getElementById("sos-share");
-
-            let holdTimer = null;
-            let countdownTimer = null;
-            let countdown = 5;
-            let activationStarted = false;
-            let mapsLink = "";
-
-            function resetSOS() {
-                clearTimeout(holdTimer);
-                clearInterval(countdownTimer);
-
-                activationStarted = false;
-                button.disabled = false;
-                cancelButton.style.display = "none";
-                shareButton.style.display = "none";
-
-                status.textContent = "SOS cancelled. Press and hold for 3 seconds";
-            }
-
-            function getLocation() {
-                status.textContent = "Getting your location...";
-
-                if (!navigator.geolocation) {
-                    status.textContent = "Location is not supported by this browser.";
-                    shareButton.style.display = "block";
-                    return;
+                #sos-cancel {
+                    border: 1px solid #DC2626;
+                    background: white;
+                    color: #DC2626;
                 }
 
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        const latitude = position.coords.latitude;
-                        const longitude = position.coords.longitude;
+                #sos-share {
+                    border: none;
+                    background: #16A34A;
+                    color: white;
+                }
+                #location-result {
+                display: none;
+                width: 100%;
+                margin-top: 10px;
+                padding: 8px 5px;
+                text-align: center;
+                box-sizing: border-box;
+                overflow-wrap: anywhere;
+            }
 
-                        mapsLink =
-                            "https://www.google.com/maps?q=" +
-                            latitude + "," + longitude;
+            #place-name {
+                font-size: 12px;
+                font-weight: 700;
+                line-height: 1.5;
+                color: #1E293B;
+            }
 
+            #gps-coordinates {
+                font-size: 10px;
+                line-height: 1.7;
+                color: #475569;
+                margin-top: 5px;
+            }
+
+            #open-map {
+                display: inline-block;
+                margin-top: 8px;
+                font-size: 11px;
+                font-weight: 700;
+                color: #2563EB;
+                text-decoration: underline;
+                cursor: pointer;
+            }
+            </style>
+
+            <div id="action-row">
+
+                <!-- HOSPITAL BUTTON -->
+                <div class="action-item">
+                    <button
+                        id="hospital-button"
+                        class="action-button"
+                        type="button"
+                    >
+                        <span class="action-icon">🏥</span>
+                        <span>HOSPITAL</span>
+                        <span class="action-description">
+                            Find nearby hospitals
+                        </span>
+                    </button>
+                </div>
+
+                <!-- SOS BUTTON -->
+                <div class="action-item">
+                    <button
+                        id="sos-button"
+                        class="action-button"
+                        type="button"
+                    >
+                        <span class="action-icon">🆘</span>
+                        <span>SOS</span>
+                    </button>
+
+                    <div id="sos-status">
+                        Press and hold SOS for 3 seconds
+                    </div>
+
+                    <button id="sos-cancel" type="button">
+                        Cancel SOS
+                    </button>
+
+                    <button id="sos-share" type="button">
+                        Share SOS Alert on WhatsApp
+                    </button>
+                </div>
+
+                <!-- LOCATION BUTTON -->
+                <div class="action-item">
+                    <button
+                        id="location-button"
+                        class="action-button"
+                        type="button"
+                    >
+                        <span class="action-icon">📍</span>
+                        <span>LOCATION</span>
+                        <span class="action-description">
+                            Get your current location
+                        </span>
+                    </button>
+
+                    <div id="location-result">
+                        <div id="place-name"></div>
+                        <div id="gps-coordinates"></div>
+
+                        <a
+                            id="open-map"
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Open Map
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <script>
+                const button = document.getElementById("sos-button");
+                const hospitalButton = document.getElementById("hospital-button");
+                const locationButton = document.getElementById("location-button");
+                const status = document.getElementById("sos-status");
+                const cancelButton = document.getElementById("sos-cancel");
+                const shareButton = document.getElementById("sos-share");
+                const locationResult = document.getElementById("location-result");
+
+                let holdTimer = null;
+                let countdownTimer = null;
+                let countdown = 5;
+                let activationStarted = false;
+                let mapsLink = "";
+
+                hospitalButton.addEventListener("click", function() {
+                    window.open(
+                        "https://www.google.com/maps/search/?api=1&query=hospitals+near+me",
+                        "_blank"
+                    );
+                });
+
+                function getLocation(forSOS = false) {
+                    status.textContent = "Getting your location...";
+                    locationResult.style.display = "none";
+
+                    if (!navigator.geolocation) {
+                        status.textContent =
+                            "Location is not supported by this browser.";
+
+                        if (forSOS) {
+                            shareButton.style.display = "block";
+                        }
+
+                        return;
+                    }
+
+                    navigator.geolocation.getCurrentPosition(
+                    async function(position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+
+                    mapsLink =
+                        "https://www.google.com/maps?q=" +
+                        latitude + "," + longitude;
+
+                    if (forSOS) {
                         status.textContent =
                             "Location ready. You can now share your SOS alert.";
 
                         shareButton.style.display = "block";
-                        cancelButton.style.display = "none";
-                    },
 
-                    function(error) {
-                        mapsLink = "";
-
-                        status.textContent =
-                            "Location unavailable. You can still share an SOS alert.";
-
-                        shareButton.style.display = "block";
-                        cancelButton.style.display = "none";
-                    },
-
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 15000,
-                        maximumAge: 0
-                    }
-                );
-            }
-
-            function startCountdown() {
-                activationStarted = true;
-                button.disabled = true;
-                cancelButton.style.display = "block";
-
-                countdown = 5;
-
-                status.textContent =
-                    "SOS activating in " + countdown +
-                    " seconds. Cancel if accidental.";
-
-                countdownTimer = setInterval(function() {
-                    countdown--;
-
-                    if (countdown > 0) {
-                        status.textContent =
-                            "SOS activating in " + countdown +
-                            " seconds. Cancel if accidental.";
                     } else {
-                        clearInterval(countdownTimer);
-                        cancelButton.style.display = "none";
-                        getLocation();
+                        status.textContent =
+                            "Your location has been retrieved.";
+
+                        const placeName =
+                            document.getElementById("place-name");
+
+                        const coordinates =
+                            document.getElementById("gps-coordinates");
+
+                        const openMap =
+                            document.getElementById("open-map");
+
+                        locationResult.style.display = "block";
+
+                        coordinates.textContent =
+                            "Latitude: " + latitude.toFixed(6) +
+                            "° | Longitude: " + longitude.toFixed(6) + "°";
+
+                        openMap.href = mapsLink;
+
+                        placeName.textContent = "Finding nearby place...";
+
+                        try {
+                            const response = await fetch(
+                                "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=" +
+                                latitude + "&lon=" + longitude
+                            );
+
+                            if (!response.ok) {
+                                throw new Error("Location lookup failed");
+                            }
+
+                            const data = await response.json();
+
+                            placeName.textContent =
+                                data.name ||
+                                data.address?.suburb ||
+                                data.address?.neighbourhood ||
+                                data.address?.city_district ||
+                                data.address?.city ||
+                                data.display_name ||
+                                "Nearby place name unavailable";
+
+                        } catch (error) {
+                            placeName.textContent =
+                                "Place name unavailable. GPS coordinates are available above.";
+                        }
                     }
-                }, 1000);
-            }
 
-            function startHold(event) {
-                if (activationStarted || button.disabled) {
-                    return;
+                    cancelButton.style.display = "none";
+                },
+
+                        function(error) {
+                            mapsLink = "";
+
+                            status.textContent =
+                                "Location unavailable. Please allow location permission.";
+
+                            if (forSOS) {
+                                shareButton.style.display = "block";
+                            }
+                        },
+
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 15000,
+                            maximumAge: 0
+                        }
+                    );
                 }
 
-                event.preventDefault();
+                locationButton.addEventListener("click", function() {
+                    getLocation(false);
+                });
 
-                try {
-                    button.setPointerCapture(event.pointerId);
-                } catch (error) {
-                    // Continue if pointer capture is unavailable.
-                }
-
-                status.textContent = "Keep holding...";
-
-                holdTimer = setTimeout(function() {
-                    startCountdown();
-                }, 3000);
-            }
-
-            function stopHold() {
-                if (!activationStarted) {
+                function resetSOS() {
                     clearTimeout(holdTimer);
-                    status.textContent = "Press and hold for 3 seconds";
-                }
-            }
+                    clearInterval(countdownTimer);
 
-            button.addEventListener("pointerdown", startHold);
-            button.addEventListener("pointerup", stopHold);
-            button.addEventListener("pointercancel", stopHold);
+                    activationStarted = false;
+                    button.disabled = false;
+                    cancelButton.style.display = "none";
+                    shareButton.style.display = "none";
 
-            cancelButton.addEventListener("click", function() {
-                resetSOS();
-            });
-
-            shareButton.addEventListener("click", function() {
-                let message =
-                    "SOS! I need help. Please contact me immediately.";
-
-                if (mapsLink) {
-                    message += "\\nMy current location: " + mapsLink;
-                } else {
-                    message += "\\nMy location could not be retrieved.";
+                    status.textContent =
+                        "SOS cancelled. Press and hold for 3 seconds.";
                 }
 
-                const whatsappURL =
-                    "https://wa.me/?text=" + encodeURIComponent(message);
+                function startCountdown() {
+                    activationStarted = true;
+                    button.disabled = true;
+                    cancelButton.style.display = "block";
 
-                window.open(whatsappURL, "_blank");
-            });
-        </script>
+                    countdown = 5;
+
+                    status.textContent =
+                        "SOS activating in " + countdown +
+                        " seconds. Cancel if accidental.";
+
+                    countdownTimer = setInterval(function() {
+                        countdown--;
+
+                        if (countdown > 0) {
+                            status.textContent =
+                                "SOS activating in " + countdown +
+                                " seconds. Cancel if accidental.";
+                        } else {
+                            clearInterval(countdownTimer);
+                            cancelButton.style.display = "none";
+                            getLocation(true);
+                        }
+                    }, 1000);
+                }
+
+                function startHold(event) {
+                    if (activationStarted || button.disabled) {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    try {
+                        button.setPointerCapture(event.pointerId);
+                    } catch (error) {
+                        // Continue if pointer capture is unavailable.
+                    }
+
+                    status.textContent = "Keep holding SOS...";
+
+                    holdTimer = setTimeout(function() {
+                        startCountdown();
+                    }, 3000);
+                }
+
+                function stopHold() {
+                    if (!activationStarted) {
+                        clearTimeout(holdTimer);
+                        status.textContent =
+                            "Press and hold SOS for 3 seconds.";
+                    }
+                }
+
+                button.addEventListener("pointerdown", startHold);
+                button.addEventListener("pointerup", stopHold);
+                button.addEventListener("pointercancel", stopHold);
+
+                cancelButton.addEventListener("click", function() {
+                    resetSOS();
+                });
+
+                shareButton.addEventListener("click", function() {
+                    let message =
+                        "SOS! I need help. Please contact me immediately.";
+
+                    if (mapsLink) {
+                        message += "\\nMy current location: " + mapsLink;
+                    } else {
+                        message += "\\nMy location could not be retrieved.";
+                    }
+
+                    const whatsappURL =
+                        "https://wa.me/?text=" + encodeURIComponent(message);
+
+                    window.open(whatsappURL, "_blank");
+                });
+            </script>
+
+        </div>
         """,
-        height=300,
+        height=330,
         scrolling=False
     )
 
 
-        # SAFE EMERGENCY CALL CONFIRMATION
 
-    if "confirm_112_call" not in st.session_state:
-        st.session_state.confirm_112_call = False
-
-    if st.button("📞 Call 112", key="call_112_button"):
-        st.session_state.confirm_112_call = True
-
-    if st.session_state.confirm_112_call:
-
-        st.warning(
-            "You are about to open your phone dialer "
-            "to call India's emergency number 112."
-        )
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.link_button(
-                "Confirm & Open Dialer",
-                "tel:112",
-                use_container_width=True
-            )
-
-        with col2:
-            if st.button("Cancel", use_container_width=True):
-                st.session_state.confirm_112_call = False
-                st.rerun()
-
-    # HOME PAGE CONTENT
-
-    st.markdown("""
-    ## 👋 Welcome to AI First Aid Assistant
-
-    Your AI-powered multilingual companion for basic first-aid guidance.
-    """)
-
-    st.warning(
-        "⚠️ This application is for educational purposes only. "
-        "Always contact emergency medical services during serious emergencies."
-    )
 
     st.divider()
     # ======================================================
@@ -2065,6 +2261,11 @@ elif option == t["help"]:
 
                     st.markdown(f"**👤 {contact['name']}**")
                     st.caption(f"📞 {contact['phone']}")
+                    st.link_button(
+                        "📞 Call",
+                        f"tel:{contact['phone']}",
+                        use_container_width=True
+                    )
 
                     if st.button(
                         "🗑 Delete",
