@@ -984,6 +984,7 @@ if option == t["home"]:
     # SOS DISTRESS SIGNAL
     # ======================================================
 
+
     components.html(
         """
         <div id="sos-container">
@@ -1016,6 +1017,11 @@ if option == t["home"]:
                     transform: scale(.96);
                 }
 
+                #sos-button:disabled {
+                    opacity: .7;
+                    cursor: not-allowed;
+                }
+
                 #sos-status {
                     margin-top: 10px;
                     font-size: 13px;
@@ -1034,6 +1040,18 @@ if option == t["home"]:
                     font-weight: bold;
                     cursor: pointer;
                 }
+
+                #sos-share {
+                    display: none;
+                    margin-top: 12px;
+                    padding: 12px 22px;
+                    border: none;
+                    border-radius: 9px;
+                    background: #16A34A;
+                    color: white;
+                    font-weight: bold;
+                    cursor: pointer;
+                }
             </style>
 
             <button id="sos-button" type="button">
@@ -1047,26 +1065,161 @@ if option == t["home"]:
             <button id="sos-cancel" type="button">
                 Cancel SOS
             </button>
-                        <button id="sos-share" type="button" style="
-                display:none;
-                margin-top:12px;
-                padding:12px 22px;
-                border:none;
-                border-radius:9px;
-                background:#16A34A;
-                color:white;
-                font-weight:bold;
-                cursor:pointer;
-            ">
+
+            <button id="sos-share" type="button">
                 Share SOS Alert on WhatsApp
             </button>
         </div>
 
-      
+        <script>
+            const button = document.getElementById("sos-button");
+            const status = document.getElementById("sos-status");
+            const cancelButton = document.getElementById("sos-cancel");
+            const shareButton = document.getElementById("sos-share");
+
+            let holdTimer = null;
+            let countdownTimer = null;
+            let countdown = 5;
+            let activationStarted = false;
+            let mapsLink = "";
+
+            function resetSOS() {
+                clearTimeout(holdTimer);
+                clearInterval(countdownTimer);
+
+                activationStarted = false;
+                button.disabled = false;
+                cancelButton.style.display = "none";
+                shareButton.style.display = "none";
+
+                status.textContent = "SOS cancelled. Press and hold for 3 seconds";
+            }
+
+            function getLocation() {
+                status.textContent = "Getting your location...";
+
+                if (!navigator.geolocation) {
+                    status.textContent = "Location is not supported by this browser.";
+                    shareButton.style.display = "block";
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+
+                        mapsLink =
+                            "https://www.google.com/maps?q=" +
+                            latitude + "," + longitude;
+
+                        status.textContent =
+                            "Location ready. You can now share your SOS alert.";
+
+                        shareButton.style.display = "block";
+                        cancelButton.style.display = "none";
+                    },
+
+                    function(error) {
+                        mapsLink = "";
+
+                        status.textContent =
+                            "Location unavailable. You can still share an SOS alert.";
+
+                        shareButton.style.display = "block";
+                        cancelButton.style.display = "none";
+                    },
+
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
+                        maximumAge: 0
+                    }
+                );
+            }
+
+            function startCountdown() {
+                activationStarted = true;
+                button.disabled = true;
+                cancelButton.style.display = "block";
+
+                countdown = 5;
+
+                status.textContent =
+                    "SOS activating in " + countdown +
+                    " seconds. Cancel if accidental.";
+
+                countdownTimer = setInterval(function() {
+                    countdown--;
+
+                    if (countdown > 0) {
+                        status.textContent =
+                            "SOS activating in " + countdown +
+                            " seconds. Cancel if accidental.";
+                    } else {
+                        clearInterval(countdownTimer);
+                        cancelButton.style.display = "none";
+                        getLocation();
+                    }
+                }, 1000);
+            }
+
+            function startHold(event) {
+                if (activationStarted || button.disabled) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                try {
+                    button.setPointerCapture(event.pointerId);
+                } catch (error) {
+                    // Continue if pointer capture is unavailable.
+                }
+
+                status.textContent = "Keep holding...";
+
+                holdTimer = setTimeout(function() {
+                    startCountdown();
+                }, 3000);
+            }
+
+            function stopHold() {
+                if (!activationStarted) {
+                    clearTimeout(holdTimer);
+                    status.textContent = "Press and hold for 3 seconds";
+                }
+            }
+
+            button.addEventListener("pointerdown", startHold);
+            button.addEventListener("pointerup", stopHold);
+            button.addEventListener("pointercancel", stopHold);
+
+            cancelButton.addEventListener("click", function() {
+                resetSOS();
+            });
+
+            shareButton.addEventListener("click", function() {
+                let message =
+                    "SOS! I need help. Please contact me immediately.";
+
+                if (mapsLink) {
+                    message += "\\nMy current location: " + mapsLink;
+                } else {
+                    message += "\\nMy location could not be retrieved.";
+                }
+
+                const whatsappURL =
+                    "https://wa.me/?text=" + encodeURIComponent(message);
+
+                window.open(whatsappURL, "_blank");
+            });
+        </script>
         """,
-        height=190,
+        height=300,
         scrolling=False
     )
+
 
         # SAFE EMERGENCY CALL CONFIRMATION
 
